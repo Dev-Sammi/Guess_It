@@ -17,4 +17,6 @@
     <string name="add">Add</string>
     <string name="add_new_a_word">Add new a word</string>
     <string name="menu_search">Search</string>
+    <string name="add_new_word">%s added successfully</string>
+    <string name="edit_text_wrong_input">Please check the input</string>
 </resources>

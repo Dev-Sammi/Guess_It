@@ -23,5 +23,8 @@ interface WordDao {
     @Query("DELETE FROM words_table WHERE text = :text")
     suspend fun deleteWord(text: String)
 
+    @Delete
+    suspend fun delete(word: Word)
+
 
 }

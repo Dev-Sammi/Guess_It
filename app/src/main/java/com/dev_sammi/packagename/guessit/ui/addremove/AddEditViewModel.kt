@@ -18,8 +18,8 @@ class AddEditViewModel @Inject constructor(
     private val preferenceManager: PreferenceManager
 ) : ViewModel() {
 
-    private val _EventChannel = Channel<WordListEvent>()
-    val eventChannel = _EventChannel.receiveAsFlow()
+    private val _mEventChannel = Channel<WordListEvent>()
+    val eventChannel = _mEventChannel.receiveAsFlow()
 
     val highestScore = preferenceManager.getPreferenceData.asLiveData()
 
@@ -41,7 +41,7 @@ class AddEditViewModel @Inject constructor(
             addNewWord(word)
         } else {
             viewModelScope.launch {
-                _EventChannel.send(WordListEvent.ShowErrorMessage("Invalid input"))
+                _mEventChannel.send(WordListEvent.ShowErrorMessage("Invalid input"))
             }
         }
     }
@@ -49,12 +49,19 @@ class AddEditViewModel @Inject constructor(
     private fun addNewWord(newWord: Word) {
         viewModelScope.launch {
             wordDao.insert(newWord)
-            _EventChannel.send(WordListEvent.ShowAddedWordMessage(newWord.text))
+            _mEventChannel.send(WordListEvent.ShowAddedWordMessage(newWord))
+        }
+    }
+
+    fun deleteWord(word: Word){
+        viewModelScope.launch {
+            Timber.d("time to delete")
+            wordDao.delete(word)
         }
     }
 
     sealed class WordListEvent() {
-        data class ShowAddedWordMessage(val addedWord: String) : WordListEvent()
+        data class ShowAddedWordMessage(val addedWord: Word) : WordListEvent()
         data class ShowDeletedWordMessage(val deletedWord: String) : WordListEvent()
         data class ShowEditedWordMessage(val editedWord: String) : WordListEvent()
         data class ShowErrorMessage(val error: String) : WordListEvent()

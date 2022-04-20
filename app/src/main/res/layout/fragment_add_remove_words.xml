@@ -10,8 +10,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.addremove.AddRemoveWordsFragment"
-        android:layout_margin="16dp">
+        android:layout_margin="16dp"
+        tools:context=".ui.addremove.AddRemoveWordsFragment">
 
 
         <androidx.recyclerview.widget.RecyclerView
@@ -29,6 +29,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
+            android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
             android:hint="@string/add_new_a_word"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/bt_add_word"
