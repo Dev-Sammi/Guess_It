@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Guess It</string>
+    <string name="play">Play</string>
+    <string name="get_ready_to">Get ready to</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="the_word_is">The word is …</string>
+    <string name="highest_score">Highest Score: %s</string>
+    <string name="word">"%s"</string>
+    <string name="score_20">Score: %s</string>
+    <string name="_00_00">"%s"</string>
+    <string name="correct">Correct</string>
+    <string name="skip_word">Skip word</string>
+    <string name="final_score">%s</string>
+    <string name="total_score">Total Score</string>
+    <string name="play_again">Play again</string>
+    <string name="add">Add</string>
+    <string name="add_new_a_word">Add new a word</string>
+    <string name="menu_search">Search</string>
+</resources>

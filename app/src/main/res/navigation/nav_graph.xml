@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/addRemoveWordsFragment">
+
+    <fragment
+        android:id="@+id/playFragment"
+        android:name="com.dev_sammi.packagename.guessit.ui.play.PlayFragment"
+        android:label="PlayFragment" >
+        <action
+            android:id="@+id/action_playFragment_to_gameFragment"
+            app:destination="@id/gameFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/gameFragment"
+        android:name="com.dev_sammi.packagename.guessit.ui.game.GameFragment"
+        android:label="Let's Play"
+        tools:layout="@layout/fragment_game" />
+    <fragment
+        android:id="@+id/scoreFragment"
+        android:name="com.dev_sammi.packagename.guessit.ui.score.ScoreFragment"
+        android:label="ScoreFragment" />
+    <fragment
+        android:id="@+id/addRemoveWordsFragment"
+        android:name="com.dev_sammi.packagename.guessit.ui.addremove.AddRemoveWordsFragment"
+        android:label="fragment_add_remove_words"
+        tools:layout="@layout/fragment_add_remove_words" />
+</navigation>
