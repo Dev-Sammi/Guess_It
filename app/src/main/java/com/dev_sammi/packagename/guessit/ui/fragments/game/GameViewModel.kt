@@ -1,11 +1,16 @@
 package com.dev_sammi.packagename.guessit.ui.fragments.game
 
+import android.os.CountDownTimer
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.dev_sammi.packagename.guessit.WordRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "GameViewModel"
@@ -18,10 +23,17 @@ class GameViewModel @Inject constructor(
     var count = 1
     var score = 0
     val takeNumOfWord = 10
+    var firstTimeStarting = true
+    var countDownFrm = 10100L
     val allWordsListForGame = wordRepository.mGetAllWordsForGame()
     private val _selectedWordsListForGame = mutableListOf<String>()
     private var _displayNextWord = MutableLiveData<String>()
     val displayNextWord: LiveData<String> get() = _displayNextWord
+    private var _displayTimer = MutableLiveData<Long>()
+    val displayTimer: LiveData<Long> get() = _displayTimer
+
+    private val _eventChannel = Channel<GameEvents>()
+    val eventChannel get() = _eventChannel.receiveAsFlow()
 
 
     fun sortAndSelectTenWords(list: List<String>?) {
@@ -47,11 +59,11 @@ class GameViewModel @Inject constructor(
     }
 
     fun correctAnswer() {
-        if(count == takeNumOfWord ){
+        if (count == takeNumOfWord) {
             return
-        }else{
-            score ++
-            count ++
+        } else {
+            score++
+            count++
             nextWord()
         }
         Log.d(TAG, "GameScore: $score")
@@ -60,17 +72,68 @@ class GameViewModel @Inject constructor(
     }
 
     fun skipAnswer() {
-        if(count == takeNumOfWord ){
+        if (count == takeNumOfWord) {
             return
-        }else{
-            count ++
+        } else {
+            count++
             nextWord()
         }
         Log.d(TAG, "GameScore: $score")
     }
 
 
+
+    fun startTimer(){
+        timer.start()
+        firstTimeStarting = false
+    }
+
+
+    fun cancelTimer() {
+        timer.cancel()
+
+    }
+
+
+    var timer = object : CountDownTimer(countDownFrm, ONE_SECOND) {
+        override fun onTick(millisUntilFinished: Long) {
+            val timeTillFinish = millisUntilFinished / ONE_SECOND
+            Log.d(TAG, "onTick: ${timeTillFinish}")
+            if(timeTillFinish == 0L){
+                countDownFrm = 20000L
+
+                viewModelScope.launch {
+                    _eventChannel.send(GameEvents.FinishStartingCountDown)
+                }
+            }
+            _displayTimer.postValue(timeTillFinish)
+        }
+
+        override fun onFinish() {
+            cancelTimer()
+            startTimer()
+
+        }
+    }
+
+
+    companion object {
+        const val ZERO_TIME = 0L
+        const val GET_READY = 3000L
+        const val ONE_SECOND = 1000L
+        const val COUNTDOWN_PANIC_SECONDS = 10L
+    }
+    sealed class GameEvents() {
+        object FinishStartingCountDown : GameEvents()
+    }
 }
+
+private val CORRECT_BUZZ_PATTERN = longArrayOf(100, 100, 100, 100, 100, 100)
+private val GET_READY_BUZZ_PATTERN = longArrayOf(0, 100)
+private val PANIC_BUZZ_PATTERN = longArrayOf(0, 200)
+private val GAME_OVER_BUZZ_PATTERN = longArrayOf(0, 2000)
+private val START_BUZZ_PATTERN = longArrayOf(0, 500)
+private val NO_BUZZ_PATTERN = longArrayOf(0)
 
 /*
 

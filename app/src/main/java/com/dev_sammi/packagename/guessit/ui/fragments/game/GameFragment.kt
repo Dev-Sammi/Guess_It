@@ -1,7 +1,6 @@
 package com.dev_sammi.packagename.guessit.ui.fragments.game
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,9 +8,13 @@ import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import com.dev_sammi.packagename.guessit.R
 import com.dev_sammi.packagename.guessit.databinding.FragmentGameBinding
+import com.dev_sammi.packagename.guessit.ui.utils.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 private const val TAG = "GameFragment"
 
@@ -47,13 +50,32 @@ class GameFragment : Fragment(R.layout.fragment_game) {
             lifecycleOwner = this@GameFragment
         }
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            whenStarted {
+                mGameViewModel.eventChannel.collect(){event ->
+                    when(event){
+                        GameViewModel.GameEvents.FinishStartingCountDown -> {
+                            binding.cvGameCardView.isVisible = false
+                        }
+                    }.exhaustive
+                }
+            }
+        }
+
     }
 
     private fun showGame() {
         binding.pgbProgressBarId.isVisible = false
         binding.clGameDisplayId.isVisible = true
+        if(mGameViewModel.firstTimeStarting) {
+            mGameViewModel.startTimer()
+        }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        mGameViewModel.cancelTimer()
+    }
 
 }
 

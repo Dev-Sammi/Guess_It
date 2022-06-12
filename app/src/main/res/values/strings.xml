@@ -19,7 +19,7 @@
     <string name="menu_search">Search</string>
     <string name="add_new_word">%s added successfully</string>
     <string name="edit_text_wrong_input">Please check the input</string>
-    <string name="get_ready_to_start_in">Get ready to start in</string>
+    <string name="get_ready_to_start_...">Get ready to start ...</string>
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="settings">Settings</string>
