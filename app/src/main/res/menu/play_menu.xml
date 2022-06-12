@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:icon="@drawable/ic_menu"
+        android:title="@string/menu"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item
+                android:id="@+id/mi_settings"
+                android:icon="@drawable/ic_settings"
+                android:title="@string/settings"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/mi_how_to_play"
+                android:icon="@drawable/ic_play"
+                android:title="@string/how_to_play"
+                app:showAsAction="never" />
+
+            <item
+                android:id="@+id/mi_add_more_words"
+                android:icon="@drawable/ic_add"
+                android:title="@string/add_more_words"
+                app:showAsAction="never" />
+        </menu>
+    </item>
+</menu>

@@ -1,4 +1,4 @@
-package com.dev_sammi.packagename.guessit.ui.score
+package com.dev_sammi.packagename.guessit.ui.fragments.score
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

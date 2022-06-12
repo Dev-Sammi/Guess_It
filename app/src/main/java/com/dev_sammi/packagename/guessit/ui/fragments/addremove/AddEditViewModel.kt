@@ -1,8 +1,7 @@
-package com.dev_sammi.packagename.guessit.ui.addremove
+package com.dev_sammi.packagename.guessit.ui.fragments.addremove
 
 import androidx.lifecycle.*
-import com.dev_sammi.packagename.guessit.PreferenceManager
-import com.dev_sammi.packagename.guessit.db.WordDao
+import com.dev_sammi.packagename.guessit.WordRepository
 import com.dev_sammi.packagename.guessit.model.Word
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -14,14 +13,12 @@ import javax.inject.Inject
 @HiltViewModel
 class AddEditViewModel @Inject constructor(
     private val state: SavedStateHandle,
-    private val wordDao: WordDao,
-    private val preferenceManager: PreferenceManager
-) : ViewModel() {
+    private val wordRepository: WordRepository,
+    ) : ViewModel() {
+    private val wordDao = wordRepository.wordDao
 
     private val _mEventChannel = Channel<WordListEvent>()
     val eventChannel = _mEventChannel.receiveAsFlow()
-
-    val highestScore = preferenceManager.getPreferenceData.asLiveData()
 
     private val _searchQuery = state.getLiveData<String>("search_query", "")
     val searchQuery: LiveData<String> get() = _searchQuery

@@ -1,5 +1,6 @@
-package com.dev_sammi.packagename.guessit.ui.addremove
+package com.dev_sammi.packagename.guessit.ui.fragments.addremove
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.widget.SearchView
@@ -15,6 +16,7 @@ import com.dev_sammi.packagename.guessit.R
 import com.dev_sammi.packagename.guessit.databinding.FragmentAddRemoveWordsBinding
 import com.dev_sammi.packagename.guessit.hideKeyboard
 import com.dev_sammi.packagename.guessit.onTextChangeListener
+import com.dev_sammi.packagename.guessit.ui.activities.MainActivity
 import com.dev_sammi.packagename.guessit.ui.utils.exhaustive
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -39,9 +41,18 @@ class AddRemoveWordsFragment : Fragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
+        val mainActivity = (activity as MainActivity)
+
+
+        mainActivity.setSupportActionBar(binding.myToolBar)
         wordAdapter = WordAdapter()
 
         viewModel.allWords.observe(viewLifecycleOwner) {
@@ -139,6 +150,14 @@ class AddRemoveWordsFragment : Fragment() {
             viewModel.setWordQuery(it)
         }
     }
+
+
+    override fun onDetach() {
+
+        super.onDetach()
+
+    }
+
 
 
 }

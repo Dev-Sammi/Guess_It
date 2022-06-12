@@ -6,8 +6,8 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="the_word_is">The word is …</string>
     <string name="highest_score">Highest Score: %s</string>
-    <string name="word">"%s"</string>
-    <string name="score_20">Score: %s</string>
+    <string name="word">\"%s\"</string>
+    <string name="score_20">Score: %1$s / %2$s</string>
     <string name="_00_00">"%s"</string>
     <string name="correct">Correct</string>
     <string name="skip_word">Skip word</string>
@@ -19,4 +19,14 @@
     <string name="menu_search">Search</string>
     <string name="add_new_word">%s added successfully</string>
     <string name="edit_text_wrong_input">Please check the input</string>
+    <string name="get_ready_to_start_in">Get ready to start in</string>
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="settings">Settings</string>
+    <string name="menu">Menu</string>
+    <string name="minutes">minutes (1 - 60)</string>
+    <string name="how_to_play">How to play</string>
+    <string name="add_more_words">Add more words</string>
+    <string name="words_available">1 - %s</string>
+    <string name="total_number_of_words_245">Total number of words: %s</string>
 </resources>

@@ -1,7 +1,6 @@
 package com.dev_sammi.packagename.guessit.di
 
 import android.app.Application
-import android.app.job.JobScheduler
 import androidx.room.Room
 import com.dev_sammi.packagename.guessit.db.WordDatabase
 import dagger.Module

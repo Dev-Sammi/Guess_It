@@ -1,4 +1,4 @@
-package com.dev_sammi.packagename.guessit.ui.addremove
+package com.dev_sammi.packagename.guessit.ui.fragments.addremove
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -8,20 +8,20 @@ import androidx.recyclerview.widget.RecyclerView
 import com.dev_sammi.packagename.guessit.databinding.OneWordListingBinding
 import com.dev_sammi.packagename.guessit.model.Word
 
-class WordAdapter() : ListAdapter<Word, WordAdapter.WordViewModel>(DiffCallback()) {
+class WordAdapter() : ListAdapter<Word, WordAdapter.WordViewHolder>(DiffCallback()) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewModel {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewHolder {
         val binding =
             OneWordListingBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return WordViewModel(binding)
+        return WordViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: WordViewModel, position: Int) {
+    override fun onBindViewHolder(holder: WordViewHolder, position: Int) {
         val currentWord = getItem(position)
         holder.bind(currentWord)
     }
 
-    inner class WordViewModel(private val binding: OneWordListingBinding) :
+    inner class WordViewHolder(private val binding: OneWordListingBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(currentWord: Word?) {
             currentWord?.let {

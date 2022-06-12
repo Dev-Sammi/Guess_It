@@ -3,28 +3,39 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/addRemoveWordsFragment">
+    app:startDestination="@id/playFragment">
 
     <fragment
         android:id="@+id/playFragment"
-        android:name="com.dev_sammi.packagename.guessit.ui.play.PlayFragment"
+        android:name="com.dev_sammi.packagename.guessit.ui.fragments.play.PlayFragment"
         android:label="PlayFragment" >
         <action
             android:id="@+id/action_playFragment_to_gameFragment"
             app:destination="@id/gameFragment" />
+        <action
+            android:id="@+id/action_playFragment_to_addRemoveWordsFragment"
+            app:destination="@id/addRemoveWordsFragment" />
     </fragment>
     <fragment
         android:id="@+id/gameFragment"
-        android:name="com.dev_sammi.packagename.guessit.ui.game.GameFragment"
+        android:name="com.dev_sammi.packagename.guessit.ui.fragments.game.GameFragment"
         android:label="Let's Play"
         tools:layout="@layout/fragment_game" />
     <fragment
         android:id="@+id/scoreFragment"
-        android:name="com.dev_sammi.packagename.guessit.ui.score.ScoreFragment"
+        android:name="com.dev_sammi.packagename.guessit.ui.fragments.score.ScoreFragment"
         android:label="ScoreFragment" />
     <fragment
         android:id="@+id/addRemoveWordsFragment"
-        android:name="com.dev_sammi.packagename.guessit.ui.addremove.AddRemoveWordsFragment"
-        android:label="fragment_add_remove_words"
+        android:name="com.dev_sammi.packagename.guessit.ui.fragments.addremove.AddRemoveWordsFragment"
+        android:label="Words "
         tools:layout="@layout/fragment_add_remove_words" />
+    <dialog
+        android:id="@+id/settingsFragmentDialog"
+        android:name="com.dev_sammi.packagename.guessit.ui.fragments.dialogs.settings.SettingsFragmentDialog"
+        android:label="SettingsFragmentDialog" >
+        <action
+            android:id="@+id/action_settingsFragmentDialog_to_addRemoveWordsFragment"
+            app:destination="@id/addRemoveWordsFragment" />
+    </dialog><action android:id="@+id/action_global_settingsFragmentDialog" app:destination="@id/settingsFragmentDialog"/>
 </navigation>
