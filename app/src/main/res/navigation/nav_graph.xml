@@ -28,7 +28,11 @@
     <fragment
         android:id="@+id/scoreFragment"
         android:name="com.dev_sammi.packagename.guessit.ui.fragments.score.ScoreFragment"
-        android:label="ScoreFragment" />
+        android:label="ScoreFragment" >
+        <action
+            android:id="@+id/action_scoreFragment_to_playFragment"
+            app:destination="@id/playFragment" />
+    </fragment>
     <fragment
         android:id="@+id/addRemoveWordsFragment"
         android:name="com.dev_sammi.packagename.guessit.ui.fragments.addremove.AddRemoveWordsFragment"

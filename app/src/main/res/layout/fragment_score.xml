@@ -4,7 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <variable
+            name="mGameViewModel"
+            type="com.dev_sammi.packagename.guessit.ui.fragments.game.GameViewModel" />
 
+        <variable
+            name="mScoreFragment"
+            type="com.dev_sammi.packagename.guessit.ui.fragments.score.ScoreFragment" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -48,7 +54,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/guideline4"
-            app:layout_constraintVertical_bias="0.24000001" />
+            app:layout_constraintVertical_bias="0.24000001"
+            android:onClick="@{()-> mScoreFragment.playAgain()}"/>
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline4"

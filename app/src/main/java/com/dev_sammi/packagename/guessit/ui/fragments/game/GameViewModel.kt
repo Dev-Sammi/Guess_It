@@ -22,24 +22,32 @@ private const val TAG = "GameViewModel"
 class GameViewModel @Inject constructor(
     private val wordRepository: WordRepository
 ) : ViewModel() {
-    var count = 1
-    var score = 0
-    val takeNumOfWord = 10
 
-    var countDownFrm = 6000L
-    var countDownInput: Int = 6
+    private var _score: MutableLiveData<Int> = MutableLiveData(0)
+    val score: LiveData<Int> get() = _score
+
+    private var _count: MutableLiveData<Int> = MutableLiveData(0)
+    val count: LiveData<Int> get() = _count
+
+//    var count = 1
+//    var score = 0
+    val takeNumOfWord = 10
+    var countDownFrm = 10000L
     val allWordsListForGame = wordRepository.mGetAllWordsForGame()
     private val _selectedWordsListForGame = mutableListOf<String>()
     private var _displayNextWord = MutableLiveData<String>()
     val displayNextWord: LiveData<String> get() = _displayNextWord
-    private var _displayTimer = MutableLiveData<Long>()
-    val displayTimer: LiveData<Long> get() = _displayTimer
+    private var _displayTimer = MutableLiveData<String>()
+    val displayTimer: LiveData<String> get() = _displayTimer
+
+    private var _displayStarterTimer = MutableLiveData<Long>()
+    val displayStarterTimer: LiveData<Long> get() = _displayStarterTimer
 
     //Event channel for communication from the ViewModel to the GameFragment
     private val _eventChannel = Channel<GameEvents>()
     val eventChannel get() = _eventChannel.receiveAsFlow()
 
-
+    /*This fun sorts and select a num of word to play the game depending on users setting*/
     fun sortAndSelectTenWords(list: List<String>?) {
         if (list != null) {
             Log.d(TAG, "sortAndSelectTenWords: ${list.size}")
@@ -63,27 +71,27 @@ class GameViewModel @Inject constructor(
     }
 
     fun correctAnswer() {
-        if (count == takeNumOfWord) {
+        if (_count.value == takeNumOfWord) {
             return
         } else {
-            score++
-            count++
+            _score.value = _score.value?.plus(1)
+            _count.value = _count.value?.plus(1)
             nextWord()
         }
         Log.d(TAG, "GameScore: $score")
     }
 
     fun skipAnswer() {
-        if (count == takeNumOfWord) {
+        if (count.value == takeNumOfWord) {
             return
         } else {
-            count++
+            _count.value = _count.value?.plus(1)
             nextWord()
         }
         Log.d(TAG, "GameScore: $score")
     }
 
-    //this fun starts get ready starter-timer
+    //This fun starts get-ready starter-timer
     fun startGetReadyTimer() {
         starterTimer.start()
     }
@@ -93,21 +101,60 @@ class GameViewModel @Inject constructor(
         starterTimer.cancel()
         }
 
+    /*This fun Starts and cancel the main timer depending on the passed it boolean*/
     fun startMainGameTimer(cancel: Boolean){
         mainGameTimer(countDownFrm, cancel)
     }
 
+    /*This fun calculates the user input time and convert to millisec and store the value in countDownFrm*/
+    fun calculateTime() {
+        var inputHr = 0
+        var inputMin = 0
+        var inputSec = 20
+        val tNow = (inputHr*3600000)+(inputMin*60000)+(inputSec*1000)
+        countDownFrm = tNow.toLong()
+        Log.d(TAG, "calculateTime: onTick: $tNow ")
+    }
+
+    /*This fun resets all values and restart the game*/
+    fun resetGame(){
+        _score.value = 0
+        _count.value = 0
+    }
+
+    /*Get ready timer*/
+    private val starterTimer = object : CountDownTimer(GET_READY, ONE_SECOND) {
+        override fun onTick(millisUntilFinished: Long) {
+            val timeTillFinish = millisUntilFinished / ONE_SECOND
+            Log.d(TAG, "onTick: ${timeTillFinish}")
+//            if (timeTillFinish == 0L) {
+//                viewModelScope.launch {
+//                    _eventChannel.send(GameEvents.FinishStartingCountDown)
+//                }
+//            }
+            _displayStarterTimer.postValue(timeTillFinish)
+        }
+        override fun onFinish() {
+            viewModelScope.launch {
+                _eventChannel.send(GameEvents.FinishStartingCountDown)
+            }
+            cancelGetReadyTimer()
+        }
+    }
+
+    /*Main game timer*/
     private fun mainGameTimer(time: Long, cancel: Boolean) {
-//        val timeInput = (countDownInput * 60000) / 60
-//        Log.d(TAG, "onTick: $timeInput")
-//        countDownFrm = timeInput.toLong()
         val mainGameTimer = object : CountDownTimer(time, ONE_SECOND) {
             override fun onTick(millisUntilFinished: Long) {
                 val timeTillFinish = millisUntilFinished / ONE_SECOND
                 Log.d(TAG, "onTick: ${timeTillFinish}")
-                _displayTimer.postValue(timeTillFinish)
-                val formattedTime = SimpleDateFormat("hh:mm:ss").format(Date(millisUntilFinished))
-                Log.d(TAG, "onTick: ${formattedTime}")
+                var seconds = millisUntilFinished / 1000
+                val minutes = (seconds / 60) % 60
+                val hours = ((millisUntilFinished / (1000*60*60)) % 24)
+                seconds %= 60
+                val formattedTime = "${String.format("%02d", hours)}:${String.format("%02d", minutes)}:${String.format("%02d", seconds)}"
+                Log.d(TAG, "onTick: ${formattedTime} ///// $millisUntilFinished")
+                _displayTimer.postValue(formattedTime)
             }
             override fun onFinish() {
                 viewModelScope.launch {
@@ -118,39 +165,10 @@ class GameViewModel @Inject constructor(
         if(cancel)mainGameTimer.cancel() else mainGameTimer.start()
     }
 
-    fun calculateTime() {
-        val t = 60
-        val timeInSecond = t * 60
-        val time = (timeInSecond * 1000) + 100
-        countDownFrm = time.toLong()
-    }
-
-//    fun cancelMainGameTimer(){
-//        mainGameTimer.cancel()
-//    }
-
-
-    private val starterTimer = object : CountDownTimer(GET_READY, ONE_SECOND) {
-        override fun onTick(millisUntilFinished: Long) {
-            val timeTillFinish = millisUntilFinished / ONE_SECOND
-            Log.d(TAG, "onTick: ${timeTillFinish}")
-            if (timeTillFinish == 0L) {
-                viewModelScope.launch {
-                    _eventChannel.send(GameEvents.FinishStartingCountDown)
-                }
-            }
-            _displayTimer.postValue(timeTillFinish)
-        }
-
-        override fun onFinish() {
-            cancelGetReadyTimer()
-        }
-    }
-
 
     companion object {
         const val ZERO_TIME = 0L
-        const val GET_READY = 3100L
+        const val GET_READY = 3000L
         const val ONE_SECOND = 1000L
         const val COUNTDOWN_PANIC_SECONDS = 10L
     }
