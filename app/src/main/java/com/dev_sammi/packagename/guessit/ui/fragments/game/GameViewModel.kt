@@ -11,6 +11,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
 
 private const val TAG = "GameViewModel"
@@ -23,8 +25,9 @@ class GameViewModel @Inject constructor(
     var count = 1
     var score = 0
     val takeNumOfWord = 10
-    var firstTimeStarting = true
-    var countDownFrm = 10100L
+
+    var countDownFrm = 6000L
+    var countDownInput: Int = 6
     val allWordsListForGame = wordRepository.mGetAllWordsForGame()
     private val _selectedWordsListForGame = mutableListOf<String>()
     private var _displayNextWord = MutableLiveData<String>()
@@ -32,6 +35,7 @@ class GameViewModel @Inject constructor(
     private var _displayTimer = MutableLiveData<Long>()
     val displayTimer: LiveData<Long> get() = _displayTimer
 
+    //Event channel for communication from the ViewModel to the GameFragment
     private val _eventChannel = Channel<GameEvents>()
     val eventChannel get() = _eventChannel.receiveAsFlow()
 
@@ -67,8 +71,6 @@ class GameViewModel @Inject constructor(
             nextWord()
         }
         Log.d(TAG, "GameScore: $score")
-
-
     }
 
     fun skipAnswer() {
@@ -81,27 +83,58 @@ class GameViewModel @Inject constructor(
         Log.d(TAG, "GameScore: $score")
     }
 
-
-
-    fun startTimer(){
-        timer.start()
-        firstTimeStarting = false
+    //this fun starts get ready starter-timer
+    fun startGetReadyTimer() {
+        starterTimer.start()
     }
 
+    //This fun cancels the get ready starter-timer
+    fun cancelGetReadyTimer() {
+        starterTimer.cancel()
+        }
 
-    fun cancelTimer() {
-        timer.cancel()
-
+    fun startMainGameTimer(cancel: Boolean){
+        mainGameTimer(countDownFrm, cancel)
     }
 
+    private fun mainGameTimer(time: Long, cancel: Boolean) {
+//        val timeInput = (countDownInput * 60000) / 60
+//        Log.d(TAG, "onTick: $timeInput")
+//        countDownFrm = timeInput.toLong()
+        val mainGameTimer = object : CountDownTimer(time, ONE_SECOND) {
+            override fun onTick(millisUntilFinished: Long) {
+                val timeTillFinish = millisUntilFinished / ONE_SECOND
+                Log.d(TAG, "onTick: ${timeTillFinish}")
+                _displayTimer.postValue(timeTillFinish)
+                val formattedTime = SimpleDateFormat("hh:mm:ss").format(Date(millisUntilFinished))
+                Log.d(TAG, "onTick: ${formattedTime}")
+            }
+            override fun onFinish() {
+                viewModelScope.launch {
+                    _eventChannel.send(GameEvents.NavigateToScoreFragment)
+                }
+            }
+        }
+        if(cancel)mainGameTimer.cancel() else mainGameTimer.start()
+    }
 
-    var timer = object : CountDownTimer(countDownFrm, ONE_SECOND) {
+    fun calculateTime() {
+        val t = 60
+        val timeInSecond = t * 60
+        val time = (timeInSecond * 1000) + 100
+        countDownFrm = time.toLong()
+    }
+
+//    fun cancelMainGameTimer(){
+//        mainGameTimer.cancel()
+//    }
+
+
+    private val starterTimer = object : CountDownTimer(GET_READY, ONE_SECOND) {
         override fun onTick(millisUntilFinished: Long) {
             val timeTillFinish = millisUntilFinished / ONE_SECOND
             Log.d(TAG, "onTick: ${timeTillFinish}")
-            if(timeTillFinish == 0L){
-                countDownFrm = 20000L
-
+            if (timeTillFinish == 0L) {
                 viewModelScope.launch {
                     _eventChannel.send(GameEvents.FinishStartingCountDown)
                 }
@@ -110,21 +143,21 @@ class GameViewModel @Inject constructor(
         }
 
         override fun onFinish() {
-            cancelTimer()
-            startTimer()
-
+            cancelGetReadyTimer()
         }
     }
 
 
     companion object {
         const val ZERO_TIME = 0L
-        const val GET_READY = 3000L
+        const val GET_READY = 3100L
         const val ONE_SECOND = 1000L
         const val COUNTDOWN_PANIC_SECONDS = 10L
     }
+
     sealed class GameEvents() {
         object FinishStartingCountDown : GameEvents()
+        object NavigateToScoreFragment : GameEvents()
     }
 }
 

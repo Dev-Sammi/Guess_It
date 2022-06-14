@@ -20,7 +20,11 @@
         android:id="@+id/gameFragment"
         android:name="com.dev_sammi.packagename.guessit.ui.fragments.game.GameFragment"
         android:label="Let's Play"
-        tools:layout="@layout/fragment_game" />
+        tools:layout="@layout/fragment_game" >
+        <action
+            android:id="@+id/action_gameFragment_to_scoreFragment"
+            app:destination="@id/scoreFragment" />
+    </fragment>
     <fragment
         android:id="@+id/scoreFragment"
         android:name="com.dev_sammi.packagename.guessit.ui.fragments.score.ScoreFragment"

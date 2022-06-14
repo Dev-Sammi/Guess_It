@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
+import androidx.navigation.fragment.findNavController
 import com.dev_sammi.packagename.guessit.R
 import com.dev_sammi.packagename.guessit.databinding.FragmentGameBinding
 import com.dev_sammi.packagename.guessit.ui.utils.exhaustive
@@ -34,6 +35,7 @@ class GameFragment : Fragment(R.layout.fragment_game) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        mGameViewModel.calculateTime()
 
 
         /*this get and observe data from the database through the gameViewModel and send the data to
@@ -56,6 +58,12 @@ class GameFragment : Fragment(R.layout.fragment_game) {
                     when(event){
                         GameViewModel.GameEvents.FinishStartingCountDown -> {
                             binding.cvGameCardView.isVisible = false
+                            mGameViewModel.startMainGameTimer(false)
+                        }
+                        GameViewModel.GameEvents.NavigateToScoreFragment -> {
+                            findNavController().navigate(
+                                GameFragmentDirections.actionGameFragmentToScoreFragment()
+                            )
                         }
                     }.exhaustive
                 }
@@ -67,14 +75,11 @@ class GameFragment : Fragment(R.layout.fragment_game) {
     private fun showGame() {
         binding.pgbProgressBarId.isVisible = false
         binding.clGameDisplayId.isVisible = true
-        if(mGameViewModel.firstTimeStarting) {
-            mGameViewModel.startTimer()
-        }
+        mGameViewModel.startGetReadyTimer()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mGameViewModel.cancelTimer()
     }
 
 }
