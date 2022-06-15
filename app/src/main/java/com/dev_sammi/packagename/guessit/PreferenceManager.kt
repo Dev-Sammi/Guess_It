@@ -7,11 +7,16 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.dev_sammi.packagename.guessit.PreferenceManager.PreferenceKeys.GAME_DURATION
 import com.dev_sammi.packagename.guessit.PreferenceManager.PreferenceKeys.HIGHEST_SCORE_KEY
+import com.dev_sammi.packagename.guessit.PreferenceManager.PreferenceKeys.HOUR_DURATION_KEY
+import com.dev_sammi.packagename.guessit.PreferenceManager.PreferenceKeys.MINUTE_DURATION_KEY
 import com.dev_sammi.packagename.guessit.PreferenceManager.PreferenceKeys.NUMBER_OF_WORDS
 import com.dev_sammi.packagename.guessit.PreferenceManager.PreferenceKeys.PREFERENCE_MANAGER
 import com.dev_sammi.packagename.guessit.PreferenceManager.PreferenceKeys.PREVIOUS_SCORE
+import com.dev_sammi.packagename.guessit.PreferenceManager.PreferenceKeys.SAVED_GAME_TIME_IN_LONG
+import com.dev_sammi.packagename.guessit.PreferenceManager.PreferenceKeys.SECOND_DURATION_KEY
+import com.dev_sammi.packagename.guessit.model.DataStoreValues
+import com.dev_sammi.packagename.guessit.model.GameDurationHolder
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -26,13 +31,17 @@ private const val TAG = "PreferenceManager"
 class PreferenceManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+
     //DataStore keys
     private object PreferenceKeys {
         const val PREFERENCE_MANAGER = "preference_manager"
         val NUMBER_OF_WORDS = intPreferencesKey("number_of_words")
-        val GAME_DURATION = longPreferencesKey("game_duration")
+        val SAVED_GAME_TIME_IN_LONG = longPreferencesKey("saved_game_time_in_long")
         val PREVIOUS_SCORE = intPreferencesKey("previous_score")
         val HIGHEST_SCORE_KEY = intPreferencesKey("highest_key")
+        val HOUR_DURATION_KEY = intPreferencesKey("hour_key")
+        val MINUTE_DURATION_KEY = intPreferencesKey("minute_key")
+        val SECOND_DURATION_KEY = intPreferencesKey("second_key")
     }
 
     //Creating dataStore
@@ -49,15 +58,29 @@ class PreferenceManager @Inject constructor(
             }
         }
         .map { preferences ->
-            val previousScore = preferences[PREVIOUS_SCORE] ?: 0
+            val numberOfWord = preferences[NUMBER_OF_WORDS] ?: 10
             val highestScore = preferences[HIGHEST_SCORE_KEY] ?: 0
-            val gameDuration = preferences[GAME_DURATION] ?: 10000
-            val numberOfWord = preferences[NUMBER_OF_WORDS] ?: 1
-            StoredValues(numberOfWord,gameDuration,highestScore,previousScore)
+            val previousScore = preferences[PREVIOUS_SCORE] ?: 0
+            val savedGameTimeInLong = preferences[SAVED_GAME_TIME_IN_LONG] ?: 10000L
+
+            val hrs = preferences[HOUR_DURATION_KEY] ?: 0
+            val mins = preferences[MINUTE_DURATION_KEY] ?: 0
+            val secs = preferences[SECOND_DURATION_KEY] ?: 10
+
+            DataStoreValues(
+                numberOfWord, highestScore, previousScore, savedGameTimeInLong,
+                GameDurationHolder(hrs, mins, secs)
+            )
         }
 
 
     //Saving data in the dataStore
+    suspend fun saveGameTimeInLong(gameTime: Long) {
+        context.dataStore.edit { preference ->
+            preference[SAVED_GAME_TIME_IN_LONG] = gameTime
+        }
+    }
+
     suspend fun savePreviousScore(previousScore: Int) {
         context.dataStore.edit { preference ->
             preference[PREVIOUS_SCORE] = previousScore
@@ -70,11 +93,6 @@ class PreferenceManager @Inject constructor(
         }
     }
 
-    suspend fun saveGameDuration(gameTime: Long) {
-        context.dataStore.edit { preference ->
-            preference[GAME_DURATION] = gameTime
-        }
-    }
 
     suspend fun saveNumberOfWords(numOfWord: Int) {
         context.dataStore.edit { preference ->
@@ -82,12 +100,31 @@ class PreferenceManager @Inject constructor(
         }
     }
 
+    suspend fun saveHrs(hrs: Int) {
+        context.dataStore.edit { preference ->
+            preference[HOUR_DURATION_KEY] = hrs
+        }
+    }
+
+    suspend fun saveMins(mins: Int) {
+        context.dataStore.edit { preference ->
+            preference[MINUTE_DURATION_KEY] = mins
+        }
+    }
+
+    suspend fun saveSecs(secs: Int) {
+        context.dataStore.edit { preference ->
+            preference[SECOND_DURATION_KEY] = secs
+        }
+    }
+
 }
 
-data class StoredValues(
-    val numberOfWord: Int,
-    val gameDuration: Long,
-    val highestScore: Int,
-    val previousScore: Int
-)
+
+//data class DataStoreValues(
+//    val numberOfWord: Int,
+//    val gameDuration: Long,
+//    val highestScore: Int,
+//    val previousScore: Int
+//)
 

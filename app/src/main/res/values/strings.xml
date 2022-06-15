@@ -29,4 +29,14 @@
     <string name="add_more_words">Add more words</string>
     <string name="words_available">1 - %s</string>
     <string name="total_number_of_words_245">Total number of words: %s</string>
+    <string name="_10_words_to_start">10</string>
+    <string name="words_per_game">Words per game:</string>
+    <string name="sec">Sec</string>
+    <string name="_10_sec_">10</string>
+    <string name="timer_column">:</string>
+    <string name="min">Min</string>
+    <string name="hrs">Hrs</string>
+    <string name="game_duration">Game duration:</string>
+    <string name="add_more">Add more</string>
+    <string name="save_settings">Save Settings</string>
 </resources>
