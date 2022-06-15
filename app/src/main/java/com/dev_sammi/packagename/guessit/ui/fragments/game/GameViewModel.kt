@@ -11,8 +11,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
 import javax.inject.Inject
 
 private const val TAG = "GameViewModel"
@@ -29,8 +27,10 @@ class GameViewModel @Inject constructor(
     private var _count: MutableLiveData<Int> = MutableLiveData(0)
     val count: LiveData<Int> get() = _count
 
-//    var count = 1
-//    var score = 0
+    private val _buzzPattern = MutableLiveData<Buzz>()
+    val buzzPattern: LiveData<Buzz> get() = _buzzPattern
+
+    var isGameAlreadyRun = false
     val takeNumOfWord = 10
     var countDownFrm = 10000L
     val allWordsListForGame = wordRepository.mGetAllWordsForGame()
@@ -76,6 +76,7 @@ class GameViewModel @Inject constructor(
         } else {
             _score.value = _score.value?.plus(1)
             _count.value = _count.value?.plus(1)
+            _buzzPattern.value = Buzz.CORRECT_BUZZ
             nextWord()
         }
         Log.d(TAG, "GameScore: $score")
@@ -86,6 +87,7 @@ class GameViewModel @Inject constructor(
             return
         } else {
             _count.value = _count.value?.plus(1)
+            _buzzPattern.value = Buzz.SKIP_BUZZ
             nextWord()
         }
         Log.d(TAG, "GameScore: $score")
@@ -93,16 +95,18 @@ class GameViewModel @Inject constructor(
 
     //This fun starts get-ready starter-timer
     fun startGetReadyTimer() {
-        starterTimer.start()
+        if (!isGameAlreadyRun) {
+            starterTimer.start()
+        }
     }
 
     //This fun cancels the get ready starter-timer
     fun cancelGetReadyTimer() {
         starterTimer.cancel()
-        }
+    }
 
     /*This fun Starts and cancel the main timer depending on the passed it boolean*/
-    fun startMainGameTimer(cancel: Boolean){
+    fun startMainGameTimer(cancel: Boolean) {
         mainGameTimer(countDownFrm, cancel)
     }
 
@@ -111,13 +115,14 @@ class GameViewModel @Inject constructor(
         var inputHr = 0
         var inputMin = 0
         var inputSec = 20
-        val tNow = (inputHr*3600000)+(inputMin*60000)+(inputSec*1000)
+        val tNow = (inputHr * 3600000) + (inputMin * 60000) + (inputSec * 1000)
         countDownFrm = tNow.toLong()
         Log.d(TAG, "calculateTime: onTick: $tNow ")
     }
 
     /*This fun resets all values and restart the game*/
-    fun resetGame(){
+    fun resetGame() {
+        isGameAlreadyRun = false
         _score.value = 0
         _count.value = 0
     }
@@ -126,15 +131,13 @@ class GameViewModel @Inject constructor(
     private val starterTimer = object : CountDownTimer(GET_READY, ONE_SECOND) {
         override fun onTick(millisUntilFinished: Long) {
             val timeTillFinish = millisUntilFinished / ONE_SECOND
-            Log.d(TAG, "onTick: ${timeTillFinish}")
-//            if (timeTillFinish == 0L) {
-//                viewModelScope.launch {
-//                    _eventChannel.send(GameEvents.FinishStartingCountDown)
-//                }
-//            }
+            _buzzPattern.value = Buzz.GET_READY_BUZZ
             _displayStarterTimer.postValue(timeTillFinish)
         }
+
         override fun onFinish() {
+            isGameAlreadyRun = true
+            _buzzPattern.value = Buzz.START_BUZZ
             viewModelScope.launch {
                 _eventChannel.send(GameEvents.FinishStartingCountDown)
             }
@@ -150,19 +153,25 @@ class GameViewModel @Inject constructor(
                 Log.d(TAG, "onTick: ${timeTillFinish}")
                 var seconds = millisUntilFinished / 1000
                 val minutes = (seconds / 60) % 60
-                val hours = ((millisUntilFinished / (1000*60*60)) % 24)
+                val hours = ((millisUntilFinished / (1000 * 60 * 60)) % 24)
                 seconds %= 60
-                val formattedTime = "${String.format("%02d", hours)}:${String.format("%02d", minutes)}:${String.format("%02d", seconds)}"
+                val formattedTime = "${String.format("%02d", hours)}:${
+                    String.format(
+                        "%02d",
+                        minutes
+                    )
+                }:${String.format("%02d", seconds)}"
                 Log.d(TAG, "onTick: ${formattedTime} ///// $millisUntilFinished")
                 _displayTimer.postValue(formattedTime)
             }
+
             override fun onFinish() {
                 viewModelScope.launch {
                     _eventChannel.send(GameEvents.NavigateToScoreFragment)
                 }
             }
         }
-        if(cancel)mainGameTimer.cancel() else mainGameTimer.start()
+        if (cancel) mainGameTimer.cancel() else mainGameTimer.start()
     }
 
 
@@ -173,6 +182,17 @@ class GameViewModel @Inject constructor(
         const val COUNTDOWN_PANIC_SECONDS = 10L
     }
 
+    enum class Buzz(val buzzPattern: LongArray) {
+        CORRECT_BUZZ(CORRECT_BUZZ_PATTERN),
+        SKIP_BUZZ(SKIP_BUZZ_PATTERN),
+        PANIC_BUZZ(PANIC_BUZZ_PATTERN),
+        GET_READY_BUZZ(GET_READY_BUZZ_PATTERN),
+        GAME_OVER_BUZZ(GAME_OVER_BUZZ_PATTERN),
+        START_BUZZ(START_BUZZ_PATTERN),
+        NO_BUZZ_BUZZ(NO_BUZZ_PATTERN),
+
+    }
+
     sealed class GameEvents() {
         object FinishStartingCountDown : GameEvents()
         object NavigateToScoreFragment : GameEvents()
@@ -180,6 +200,7 @@ class GameViewModel @Inject constructor(
 }
 
 private val CORRECT_BUZZ_PATTERN = longArrayOf(100, 100, 100, 100, 100, 100)
+private val SKIP_BUZZ_PATTERN = longArrayOf(0, 100)
 private val GET_READY_BUZZ_PATTERN = longArrayOf(0, 100)
 private val PANIC_BUZZ_PATTERN = longArrayOf(0, 200)
 private val GAME_OVER_BUZZ_PATTERN = longArrayOf(0, 2000)

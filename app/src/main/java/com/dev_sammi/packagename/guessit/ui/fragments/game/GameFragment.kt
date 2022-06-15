@@ -1,21 +1,31 @@
 package com.dev_sammi.packagename.guessit.ui.fragments.game
 
+import android.content.pm.ActivityInfo
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.getSystemService
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.fragment.findNavController
 import com.dev_sammi.packagename.guessit.R
 import com.dev_sammi.packagename.guessit.databinding.FragmentGameBinding
+import com.dev_sammi.packagename.guessit.ui.activities.MainActivity
 import com.dev_sammi.packagename.guessit.ui.utils.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 private const val TAG = "GameFragment"
@@ -24,6 +34,7 @@ private const val TAG = "GameFragment"
 class GameFragment : Fragment(R.layout.fragment_game) {
     private lateinit var binding: FragmentGameBinding
     private val mGameViewModel: GameViewModel by activityViewModels()
+    private lateinit var mainActivity: MainActivity
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,16 +47,21 @@ class GameFragment : Fragment(R.layout.fragment_game) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        mainActivity = (activity as MainActivity)
         mGameViewModel.calculateTime()
 
 
-        /*this get and observe data from the database through the gameViewModel and send the data to
+        /*This get and observe data from the database through the gameViewModel and send the data to
         be sorted and ten taken.*/
         mGameViewModel.allWordsListForGame.observe(viewLifecycleOwner) {
             if (it.isNotEmpty()) {
                 mGameViewModel.sortAndSelectTenWords(it)
                 showGame()
             }
+        }
+
+        mGameViewModel.buzzPattern.observe(viewLifecycleOwner){vibePattern ->
+            vibrate(vibePattern.buzzPattern)
         }
 
         binding.apply {
@@ -79,8 +95,55 @@ class GameFragment : Fragment(R.layout.fragment_game) {
         mGameViewModel.startGetReadyTimer()
     }
 
+    override fun onResume() {
+        super.onResume()
+        requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+        hideSystemUI()
+        mainActivity.supportActionBar?.hide()
+        if(mGameViewModel.isGameAlreadyRun){
+            binding.cvGameCardView.isVisible = false
+        }
+
+        /*check and change the oriantation fot the app*/
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        showSystemUI()
+        mainActivity.supportActionBar?.show()
+//        requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    private fun hideSystemUI() {
+        WindowCompat.setDecorFitsSystemWindows(mainActivity.window, false)
+        WindowInsetsControllerCompat(mainActivity.window, binding.root).let { controller ->
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
+
+    private fun showSystemUI() {
+        WindowCompat.setDecorFitsSystemWindows(mainActivity.window, true)
+        WindowInsetsControllerCompat(mainActivity.window, binding.root).let { controller ->
+            controller.show(WindowInsetsCompat.Type.systemBars())
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
+
+    private fun vibrate(buzzPattern: LongArray){
+        val vibrator = activity?.getSystemService<Vibrator>()
+        vibrator?.let {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createWaveform(buzzPattern, -1))
+            } else {
+                //deprecated in API 26
+                vibrator.vibrate(buzzPattern, -1)
+            }
+        }
     }
 
 }

@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.dev_sammi.packagename.guessit.PreferenceManager.PreferenceKeys.GAME_DURATION
 import com.dev_sammi.packagename.guessit.PreferenceManager.PreferenceKeys.HIGHEST_SCORE_KEY
@@ -19,9 +20,9 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 private const val TAG = "PreferenceManager"
 
+@Singleton
 class PreferenceManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
@@ -29,7 +30,7 @@ class PreferenceManager @Inject constructor(
     private object PreferenceKeys {
         const val PREFERENCE_MANAGER = "preference_manager"
         val NUMBER_OF_WORDS = intPreferencesKey("number_of_words")
-        val GAME_DURATION = intPreferencesKey("game_duration")
+        val GAME_DURATION = longPreferencesKey("game_duration")
         val PREVIOUS_SCORE = intPreferencesKey("previous_score")
         val HIGHEST_SCORE_KEY = intPreferencesKey("highest_key")
     }
@@ -50,7 +51,7 @@ class PreferenceManager @Inject constructor(
         .map { preferences ->
             val previousScore = preferences[PREVIOUS_SCORE] ?: 0
             val highestScore = preferences[HIGHEST_SCORE_KEY] ?: 0
-            val gameDuration = preferences[GAME_DURATION] ?: 1
+            val gameDuration = preferences[GAME_DURATION] ?: 10000
             val numberOfWord = preferences[NUMBER_OF_WORDS] ?: 1
             StoredValues(numberOfWord,gameDuration,highestScore,previousScore)
         }
@@ -69,7 +70,7 @@ class PreferenceManager @Inject constructor(
         }
     }
 
-    suspend fun saveGameDuration(gameTime: Int) {
+    suspend fun saveGameDuration(gameTime: Long) {
         context.dataStore.edit { preference ->
             preference[GAME_DURATION] = gameTime
         }
@@ -85,7 +86,7 @@ class PreferenceManager @Inject constructor(
 
 data class StoredValues(
     val numberOfWord: Int,
-    val gameDuration: Int,
+    val gameDuration: Long,
     val highestScore: Int,
     val previousScore: Int
 )
