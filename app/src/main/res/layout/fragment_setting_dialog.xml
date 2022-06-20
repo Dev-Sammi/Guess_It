@@ -17,7 +17,7 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingStart="20dp"
         android:paddingTop="20dp"
@@ -28,7 +28,9 @@
             android:id="@+id/constraintLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:gravity="center"
+            app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -47,8 +49,6 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <EditText
-                android:text="@{String.valueOf(mViewModel.inputhr)}"
-                android:inputType="number"
                 android:id="@+id/et_duration_hours"
                 android:layout_width="50dp"
                 android:layout_height="wrap_content"
@@ -56,8 +56,10 @@
                 android:layout_alignBottom="@+id/textView9"
                 android:layout_centerHorizontal="true"
                 android:layout_marginStart="4dp"
-                android:hint="@string/hrs"
                 android:gravity="center_horizontal"
+                android:hint="@string/hrs"
+                android:inputType="number"
+                android:text="@{String.valueOf(mViewModel.inputhr)}"
                 app:layout_constraintBottom_toBottomOf="@+id/textView9"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toEndOf="@+id/textView9"
@@ -78,8 +80,6 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <EditText
-                android:text="@{String.valueOf(mViewModel.inputMin)}"
-                android:inputType="number"
                 android:id="@+id/et_duration_minutes"
                 android:layout_width="50dp"
                 android:layout_height="wrap_content"
@@ -87,8 +87,10 @@
                 android:layout_alignBottom="@+id/textView14"
                 android:layout_centerHorizontal="true"
                 android:layout_marginStart="4dp"
-                android:hint="@string/min"
                 android:gravity="center_horizontal"
+                android:hint="@string/min"
+                android:inputType="number"
+                android:text="@{String.valueOf(mViewModel.inputMin)}"
                 app:layout_constraintBottom_toBottomOf="@+id/textView14"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toEndOf="@+id/textView14"
@@ -109,22 +111,22 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <EditText
-                android:text="@{String.valueOf(mViewModel.inputSec)}"
-                android:inputType="number"
                 android:id="@+id/et_duration_seconds"
                 android:layout_width="50dp"
-                tools:text="@string/_10_sec_"
                 android:layout_height="wrap_content"
                 android:layout_alignTop="@+id/textView15"
                 android:layout_alignBottom="@+id/textView15"
                 android:layout_centerHorizontal="true"
                 android:layout_marginStart="4dp"
-                android:hint="@string/sec"
                 android:gravity="center_horizontal"
+                android:hint="@string/sec"
+                android:inputType="number"
+                android:text="@{String.valueOf(mViewModel.inputSec)}"
                 app:layout_constraintBottom_toBottomOf="@+id/textView15"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toEndOf="@+id/textView15"
-                app:layout_constraintTop_toTopOf="@+id/textView15" />
+                app:layout_constraintTop_toTopOf="@+id/textView15"
+                tools:text="@string/_10_sec_" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -132,8 +134,9 @@
             android:id="@+id/constraintLayout2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
+            android:layout_marginBottom="16dp"
             android:gravity="center"
+            app:layout_constraintBottom_toTopOf="@+id/tv_number_of_words_in_database"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/constraintLayout">
 
@@ -154,7 +157,6 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <EditText
-                android:inputType="number"
                 android:id="@+id/et_number_of_words_per_game"
                 android:layout_width="50dp"
                 android:layout_height="wrap_content"
@@ -163,7 +165,8 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginStart="4dp"
                 android:gravity="center_horizontal"
-                android:text="@string/_10_words_to_start"
+                android:inputType="number"
+                android:text="@{String.valueOf(mViewModel.numOfWords)}"
                 app:layout_constraintBottom_toBottomOf="@+id/textView99"
                 app:layout_constraintEnd_toStartOf="@+id/tv_max_num_of_words"
                 app:layout_constraintHorizontal_bias="0.5"
@@ -176,7 +179,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_marginStart="4dp"
-                android:text="@{String.format(@string/words_available, String.valueOf(mViewModel.numOfWords))}"
+                android:text="@{String.format(@string/words_available, String.valueOf(mViewModel.numOfAllWordsInDatabase))}"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 android:textStyle="italic"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -192,16 +195,18 @@
             android:id="@+id/tv_number_of_words_in_database"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            android:text="@{String.format(@string/total_number_of_words_245, String.valueOf(mViewModel.numOfWords))}"
+            android:layout_marginBottom="16dp"
+            android:text="@{String.format(@string/total_number_of_words_245, String.valueOf(mViewModel.numOfAllWordsInDatabase))}"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:textColor="@android:color/black"
+            app:layout_constraintBottom_toTopOf="@+id/bt_save_settings"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/constraintLayout2"
             tools:text="@string/total_number_of_words_245" />
 
 
         <com.google.android.material.button.MaterialButton
+            style="?attr/materialButtonOutlinedStyle"
             android:id="@+id/bt_add_more_words"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -214,14 +219,27 @@
             app:layout_constraintTop_toTopOf="@+id/tv_number_of_words_in_database" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/bt_default_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{()-> mSettingsDialogFragment.resetSettings()}"
+            android:text="Reset Settings"
+            android:textAllCaps="false"
+            style="?attr/materialButtonOutlinedStyle"
+            app:layout_constraintBottom_toBottomOf="@+id/bt_save_settings"
+            app:layout_constraintEnd_toStartOf="@+id/bt_save_settings"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/bt_save_settings" />
+
+        <com.google.android.material.button.MaterialButton
+            app:layout_constraintStart_toEndOf="@+id/bt_default_settings"
             android:id="@+id/bt_save_settings"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
             android:onClick="@{()-> mSettingsDialogFragment.saveAllSettings()}"
             android:text="@string/save_settings"
             android:textAllCaps="false"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tv_number_of_words_in_database" />
     </androidx.constraintlayout.widget.ConstraintLayout>

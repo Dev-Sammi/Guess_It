@@ -16,8 +16,7 @@ private const val TAG = "SettingsFragmentViewMod"
 @HiltViewModel
 class SettingsFragmentViewModel @Inject constructor(
     private val state: SavedStateHandle,
-    private val wordRepository: WordRepository,
-    private val preferenceManager: PreferenceManager
+    private val wordRepository: WordRepository
 ) : ViewModel() {
     private var _inputHr = MutableLiveData<Int>(0)
     val inputhr: LiveData<Int> get() = _inputHr
@@ -31,19 +30,18 @@ class SettingsFragmentViewModel @Inject constructor(
     private var _numOfWords = MutableLiveData<Int>(10)
     val numOfWords: LiveData<Int> get() = _numOfWords
 
-    private var _highestScore = MutableLiveData<Int>(0)
-    val highestScore: LiveData<Int> get() = _highestScore
+    private var _numOfAllWordsInDatabase = MutableLiveData<Int>(0)
+    val numOfAllWordsInDatabase: LiveData<Int> get() = _numOfAllWordsInDatabase
 
-    private var _previousScore = MutableLiveData<Int>(0)
-    val previousScore: LiveData<Int> get() = _previousScore
+    val allWordsListForGame = wordRepository.mGetAllWordsForGame()
 
 
     private val _settingsEvents = Channel<SettingValidator>()
     val settingsEvents get() = _settingsEvents.receiveAsFlow()
-    val dataStoreValues= preferenceManager.getPreferenceData
+    val dataStoreValues= wordRepository.dataStore.getPreferenceData
 
 
-    val settings = preferenceManager.getPreferenceData.asLiveData()
+    val settings = wordRepository.dataStore.getPreferenceData.asLiveData()
     private val wordDao = wordRepository.wordDao
 
 
@@ -52,41 +50,15 @@ class SettingsFragmentViewModel @Inject constructor(
 
     val gameDuration = state.getLiveData("gameDuration", 1)
 
-    private fun calculateNumOfWords(numOfWord: List<String>) {
-        _numOfWords.value = numOfWord.size
+    fun setNumOfAllWordsInDatabase(num: Int){
+        _numOfAllWordsInDatabase.value = num
     }
-
-//    fun saveHour(hour: Int) {
-//        if (hour in 1..12) {
-//            _inputHr = hour
-//            saveDuration(_inputHr,_inputMin,_inputSec)
-//        } else {
-//            viewModelScope.launch {
-//                _settingsEvents.send(
-//                    SettingValidator.InvalidDuration
-//                )
-//            }
-//        }
-//    }
-//
-//    fun saveSecond(second: Int) {
-//        if (second in 1..12) {
-//            _inputSec = second
-//            saveDuration(_inputHr,_inputMin,_inputSec)
-//        } else {
-//            viewModelScope.launch {
-//                _settingsEvents.send(
-//                    SettingValidator.InvalidDuration
-//                )
-//            }
-//        }
-//    }
 
     private fun saveDuration(hr: Int, min: Int, sec: Int) {
         val duration = (hr * 3600000) + (min * 60000) + (sec * 1000)
         var durationInLong = duration.toLong()
-        viewModelScope.launch {
-//            preferenceManager.saveGameDuration(durationInLong)
+        viewModelScope.launch(Dispatchers.IO) {
+            wordRepository.dataStore.saveGameTimeInLong(durationInLong)
         }
     }
 
@@ -95,13 +67,11 @@ class SettingsFragmentViewModel @Inject constructor(
         _inputMin.value = storedSetting.gameDurationHolder.minute
         _inputSec.value = storedSetting.gameDurationHolder.second
         _numOfWords.value = storedSetting.numberOfWord
-        _highestScore.value = storedSetting.highestScore
-        _previousScore.value = storedSetting.previousScore
     }
 
     fun checkInputs(hrs: Int, mins: Int, secs: Int, numOfWord: Int) {
         val time = hrs in 0..12 && mins in 0..60 && secs in 0..60
-        val wordsNum = numOfWord in 1..numOfWords.value!!
+        val wordsNum = numOfWord in 1.._numOfAllWordsInDatabase.value!!
         if (time && wordsNum){
             saveInputs(hrs,mins,secs,numOfWord)
             viewModelScope.launch {
@@ -130,22 +100,17 @@ class SettingsFragmentViewModel @Inject constructor(
 
     private fun saveInputs(hrs: Int, mins: Int, secs: Int, numOfWord: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            preferenceManager.saveHrs(hrs)
-            preferenceManager.saveMins(mins)
-            preferenceManager.saveSecs(secs)
-            preferenceManager.saveNumberOfWords(numOfWord)
+            wordRepository.dataStore.saveHrs(hrs)
+            wordRepository.dataStore.saveMins(mins)
+            wordRepository.dataStore.saveSecs(secs)
+            wordRepository.dataStore.saveNumberOfWords(numOfWord)
         }
         _inputHr.value = hrs
         _inputMin.value = mins
         _inputSec.value = secs
         _numOfWords.value = numOfWord
+        saveDuration(hrs,mins,secs)
     }
-
-//    init {
-//        viewModelScope.launch(Dispatchers.IO){
-//            val dataStoreValues = preferenceManager.getPreferenceData
-//        }
-//    }
 
     sealed class SettingValidator() {
         data class InvalidInput(val message: String) : SettingValidator()

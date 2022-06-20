@@ -54,6 +54,9 @@ class SettingsFragmentDialog : DialogFragment() {
                 }
             }
         }
+        settingsViewModel.allWordsListForGame.observe(viewLifecycleOwner){
+            settingsViewModel.setNumOfAllWordsInDatabase(it.size)
+        }
 
 
         binding.apply {
@@ -90,7 +93,7 @@ class SettingsFragmentDialog : DialogFragment() {
                             Snackbar.make(requireView(), event.message, Snackbar.LENGTH_SHORT).show()
                         }
                         is SettingsFragmentViewModel.SettingValidator.ValidInput -> {
-                            Snackbar.make(requireView(),"Good input", Snackbar.LENGTH_SHORT).show()
+                            Snackbar.make(requireView(),"Settings saved successfully!", Snackbar.LENGTH_SHORT).show()
                         }
                     }.exhaustive
 
@@ -101,7 +104,9 @@ class SettingsFragmentDialog : DialogFragment() {
 
     }
 
-
+    fun resetSettings(){
+        settingsViewModel.checkInputs(0,0,10,10)
+    }
 
 
     fun goToAddRemoveFragment() {
@@ -115,7 +120,7 @@ class SettingsFragmentDialog : DialogFragment() {
         val mins = Integer.parseInt(binding.etDurationMinutes.text.toString())
         val secs = Integer.parseInt(binding.etDurationSeconds.text.toString())
         val numOfWord = Integer.parseInt(binding.etNumberOfWordsPerGame.text.toString())
-        val correctDurationInput = settingsViewModel.checkInputs(hrs,mins,secs,numOfWord)
+        settingsViewModel.checkInputs(hrs,mins,secs,numOfWord)
 //        if (correctDurationInput){
 //            Snackbar.make(requireView(),"Good input", Snackbar.LENGTH_SHORT).show()
 //        }else{Snackbar.make(requireView(), "Invalid duration input", Snackbar.LENGTH_SHORT).show()}

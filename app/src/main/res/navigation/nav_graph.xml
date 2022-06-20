@@ -11,7 +11,9 @@
         android:label="PlayFragment" >
         <action
             android:id="@+id/action_playFragment_to_gameFragment"
-            app:destination="@id/gameFragment" />
+            app:destination="@id/gameFragment"
+            app:popUpTo="@id/playFragment"
+            app:popUpToInclusive="false" />
         <action
             android:id="@+id/action_playFragment_to_addRemoveWordsFragment"
             app:destination="@id/addRemoveWordsFragment" />
@@ -23,7 +25,12 @@
         tools:layout="@layout/fragment_game" >
         <action
             android:id="@+id/action_gameFragment_to_scoreFragment"
-            app:destination="@id/scoreFragment" />
+            app:destination="@id/scoreFragment"
+            app:popUpTo="@id/playFragment"
+            app:popUpToInclusive="false" />
+        <action
+            android:id="@+id/action_gameFragment_to_playFragment"
+            app:destination="@id/playFragment" />
     </fragment>
     <fragment
         android:id="@+id/scoreFragment"
@@ -32,6 +39,12 @@
         <action
             android:id="@+id/action_scoreFragment_to_playFragment"
             app:destination="@id/playFragment" />
+        <argument
+            android:name="totalScore"
+            app:argType="integer" />
+        <argument
+            android:name="numOfWords"
+            app:argType="integer" />
     </fragment>
     <fragment
         android:id="@+id/addRemoveWordsFragment"

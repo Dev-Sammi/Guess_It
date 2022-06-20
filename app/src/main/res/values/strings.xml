@@ -8,6 +8,7 @@
     <string name="highest_score">Highest Score: %s</string>
     <string name="word">\"%s\"</string>
     <string name="score_20">Score: %1$s / %2$s</string>
+    <string name="out_of_total_points">%1$s / %2$s</string>
     <string name="_00_00">"%s"</string>
     <string name="correct">Correct</string>
     <string name="skip_word">Skip word</string>
@@ -39,4 +40,6 @@
     <string name="game_duration">Game duration:</string>
     <string name="add_more">Add more</string>
     <string name="save_settings">Save Settings</string>
+    <string name="pause">Pause</string>
+    <string name="cancel_game">cancel game</string>
 </resources>

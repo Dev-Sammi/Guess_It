@@ -5,8 +5,8 @@
 
     <data>
         <variable
-            name="mGameViewModel"
-            type="com.dev_sammi.packagename.guessit.ui.fragments.game.GameViewModel" />
+            name="mViewModel"
+            type="com.dev_sammi.packagename.guessit.ui.fragments.score.ScoreViewModel" />
 
         <variable
             name="mScoreFragment"
@@ -37,7 +37,7 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:textColor="@android:color/black"
             android:textStyle="bold"
-            android:text="@{String.format(@string/score_20, mGameViewModel.score, mGameViewModel.takeNumOfWord)}"
+            android:text="@{String.format(@string/out_of_total_points, mViewModel.totalScore, mViewModel.numOfWords)}"
             app:layout_constraintBottom_toTopOf="@+id/guideline4"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -48,21 +48,20 @@
             android:id="@+id/play_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:onClick="@{()-> mScoreFragment.playAgain()}"
             android:text="@string/play_again"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/guideline4"
-            app:layout_constraintVertical_bias="0.24000001"
-            android:onClick="@{()-> mScoreFragment.playAgain()}"/>
+            app:layout_constraintTop_toTopOf="@+id/guideline4" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.37" />
+            app:layout_constraintGuide_percent="0.5" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

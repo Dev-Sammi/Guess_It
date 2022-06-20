@@ -6,10 +6,12 @@ import javax.inject.Inject
 
 
 class WordRepository @Inject constructor(
-    private val mWordDao: WordDao
+    private val mWordDao: WordDao,
+    private val preferenceManager: PreferenceManager
 ) {
     //This fun gets all word for the game and output the as livedata from the db flow.
     fun mGetAllWordsForGame() = mWordDao.getAllWordsForGame().asLiveData()
 
     val wordDao = mWordDao
+    val dataStore = preferenceManager
 }

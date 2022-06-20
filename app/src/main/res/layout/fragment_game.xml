@@ -4,6 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <variable
+            name="mGameFragment"
+            type="com.dev_sammi.packagename.guessit.ui.fragments.game.GameFragment" />
 
         <variable
             name="mViewModel"
@@ -28,44 +31,31 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/main_game_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/cl_game_display_id"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <TextView
-                android:id="@+id/textView3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:text="@string/highest_score"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.516"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+            >
 
             <TextView
                 android:id="@+id/textView4"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="32dp"
                 android:layout_marginBottom="16dp"
                 android:text="@string/the_word_is"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 app:layout_constraintBottom_toTopOf="@+id/tv_word_text"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.534"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintEnd_toStartOf="@+id/tv_word_text" />
 
             <TextView
                 android:id="@+id/tv_word_text"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:text="@{String.format(@string/word,mViewModel.displayNextWord)}"
                 android:textAlignment="center"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                android:textSize="32sp"
-                android:text="@{String.format(@string/word,mViewModel.displayNextWord)}"
+                android:textSize="50sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toTopOf="@+id/guideline3"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -86,7 +76,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="@{String.valueOf(mViewModel.displayTimer)}"
+                android:text="@{String.valueOf(mViewModel.displayMainTimer)}"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 app:layout_constraintBottom_toTopOf="@+id/tv_score"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -99,41 +89,55 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
+                android:text="@{String.format(@string/score_20, mViewModel.score, mViewModel.takeNumOfWord)}"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.498"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tv_timer"
-                android:text="@{String.format(@string/score_20, mViewModel.score, mViewModel.takeNumOfWord)}"
                 tools:text="Score: 20 points" />
 
             <Button
+                android:layout_marginStart="40dp"
                 android:id="@+id/bt_correct"
-                android:onClick="@{()-> mViewModel.correctAnswer()}"
                 android:layout_width="120dp"
                 android:layout_height="60dp"
+                android:enabled="false"
+                android:onClick="@{()-> mViewModel.correctAnswer()}"
                 android:text="@string/correct"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
 
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/bt_cancel"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="@{()-> mGameFragment.cancelGame()}"
+                android:text="@string/cancel_game"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/bt_skip_word"
+                app:layout_constraintStart_toEndOf="@+id/bt_correct" />
+
             <Button
-                android:onClick="@{()-> mViewModel.skipAnswer()}"
+                android:layout_marginEnd="40dp"
                 android:id="@+id/bt_skip_word"
                 android:layout_width="120dp"
                 android:layout_height="60dp"
+                android:enabled="false"
+                android:onClick="@{()-> mViewModel.skipAnswer()}"
                 android:text="@string/skip_word"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
             <androidx.cardview.widget.CardView
-
-                android:id="@+id/cv_game_card_view"
+                android:id="@+id/starting_timer_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:elevation="16dp"
-                android:visibility="visible"
                 app:cardCornerRadius="16dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -144,7 +148,7 @@
                 <LinearLayout
                     android:layout_width="350dp"
                     android:layout_height="250dp"
-                    android:background="@android:color/darker_gray"
+                    android:background="?android:colorAccent"
                     android:gravity="center"
                     android:orientation="vertical">
 
@@ -163,12 +167,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
+                        android:text="@{String.valueOf(mViewModel.displayStarterTimer)}"
                         android:textAlignment="center"
                         android:textColor="@android:color/black"
                         android:textSize="100sp"
                         android:textStyle="bold"
-                        tools:text="00"
-                        android:text="@{String.valueOf(mViewModel.displayStarterTimer)}"/>
+                        tools:text="00" />
 
 
                 </LinearLayout>

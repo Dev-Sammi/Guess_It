@@ -15,7 +15,9 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.fragment.findNavController
@@ -24,16 +26,16 @@ import com.dev_sammi.packagename.guessit.databinding.FragmentGameBinding
 import com.dev_sammi.packagename.guessit.ui.activities.MainActivity
 import com.dev_sammi.packagename.guessit.ui.utils.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val TAG = "GameFragment"
 
 @AndroidEntryPoint
 class GameFragment : Fragment(R.layout.fragment_game) {
     private lateinit var binding: FragmentGameBinding
-    private val mGameViewModel: GameViewModel by activityViewModels()
+    private val mGameViewModel: GameViewModel by viewModels()
     private lateinit var mainActivity: MainActivity
 
     override fun onCreateView(
@@ -48,38 +50,55 @@ class GameFragment : Fragment(R.layout.fragment_game) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mainActivity = (activity as MainActivity)
-        mGameViewModel.calculateTime()
 
-
-        /*This get and observe data from the database through the gameViewModel and send the data to
-        be sorted and ten taken.*/
-        mGameViewModel.allWordsListForGame.observe(viewLifecycleOwner) {
-            if (it.isNotEmpty()) {
-                mGameViewModel.sortAndSelectTenWords(it)
-                showGame()
-            }
+        viewLifecycleOwner.lifecycleScope.launch() {
+            mGameViewModel.dataStoreValues.flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
+                .collect() {
+                    mGameViewModel.setDataStoreValues(it)
+                }
         }
 
-        mGameViewModel.buzzPattern.observe(viewLifecycleOwner){vibePattern ->
+        if (mGameViewModel._isGameAlreadyRun) {
+            hideTimerCardView()
+        } else {
+            mGameViewModel.allWordsListForGame.observe(viewLifecycleOwner) {
+                if (it.isNotEmpty()) {
+                    mGameViewModel.sortAndSelectTenWords(it)
+                    playGame()
+                }
+            }
+            mGameViewModel.startGetReadyTimer()
+        }
+
+
+
+        mGameViewModel.buzzPattern.observe(viewLifecycleOwner) { vibePattern ->
             vibrate(vibePattern.buzzPattern)
         }
 
         binding.apply {
             mViewModel = mGameViewModel
             lifecycleOwner = this@GameFragment
+            mGameFragment = this@GameFragment
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             whenStarted {
-                mGameViewModel.eventChannel.collect(){event ->
-                    when(event){
+                mGameViewModel.eventChannel.collect() { event ->
+                    when (event) {
                         GameViewModel.GameEvents.FinishStartingCountDown -> {
-                            binding.cvGameCardView.isVisible = false
-                            mGameViewModel.startMainGameTimer(false)
+                            withContext(Dispatchers.Main){
+                            binding.startingTimerLayout.isVisible = false
+                            binding.btCorrect.isEnabled = true
+                            binding.btSkipWord.isEnabled = true
+                            mGameViewModel.startMainGameTimer(false)}
                         }
                         GameViewModel.GameEvents.NavigateToScoreFragment -> {
                             findNavController().navigate(
-                                GameFragmentDirections.actionGameFragmentToScoreFragment()
+                                GameFragmentDirections.actionGameFragmentToScoreFragment(
+                                    mGameViewModel.score.value!!,
+                                    mGameViewModel.takeNumOfWord.value!!
+                                )
                             )
                         }
                     }.exhaustive
@@ -89,10 +108,27 @@ class GameFragment : Fragment(R.layout.fragment_game) {
 
     }
 
-    private fun showGame() {
-        binding.pgbProgressBarId.isVisible = false
-        binding.clGameDisplayId.isVisible = true
-        mGameViewModel.startGetReadyTimer()
+
+    fun cancelGame() {
+        findNavController().navigate(
+            GameFragmentDirections.actionGameFragmentToPlayFragment()
+        )
+    }
+
+    private fun playGame() {
+        binding.apply {
+            pgbProgressBarId.isVisible = false
+            startingTimerLayout.isVisible = true
+        }
+    }
+
+    private fun hideTimerCardView() {
+        binding.apply {
+            startingTimerLayout.isVisible = false
+            pgbProgressBarId.isVisible = false
+            btCorrect.isEnabled = true
+            btSkipWord.isEnabled = true
+        }
     }
 
     override fun onResume() {
@@ -100,11 +136,6 @@ class GameFragment : Fragment(R.layout.fragment_game) {
         requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
         hideSystemUI()
         mainActivity.supportActionBar?.hide()
-        if(mGameViewModel.isGameAlreadyRun){
-            binding.cvGameCardView.isVisible = false
-        }
-
-        /*check and change the oriantation fot the app*/
     }
 
     override fun onDestroy() {
@@ -122,7 +153,8 @@ class GameFragment : Fragment(R.layout.fragment_game) {
         WindowCompat.setDecorFitsSystemWindows(mainActivity.window, false)
         WindowInsetsControllerCompat(mainActivity.window, binding.root).let { controller ->
             controller.hide(WindowInsetsCompat.Type.systemBars())
-            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
 
@@ -130,11 +162,12 @@ class GameFragment : Fragment(R.layout.fragment_game) {
         WindowCompat.setDecorFitsSystemWindows(mainActivity.window, true)
         WindowInsetsControllerCompat(mainActivity.window, binding.root).let { controller ->
             controller.show(WindowInsetsCompat.Type.systemBars())
-            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
 
-    private fun vibrate(buzzPattern: LongArray){
+    private fun vibrate(buzzPattern: LongArray) {
         val vibrator = activity?.getSystemService<Vibrator>()
         vibrator?.let {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
