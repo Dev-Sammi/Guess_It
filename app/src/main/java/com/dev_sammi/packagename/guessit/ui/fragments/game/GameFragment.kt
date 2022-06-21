@@ -16,10 +16,7 @@ import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.flowWithLifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenStarted
+import androidx.lifecycle.*
 import androidx.navigation.fragment.findNavController
 import com.dev_sammi.packagename.guessit.R
 import com.dev_sammi.packagename.guessit.databinding.FragmentGameBinding
@@ -27,6 +24,7 @@ import com.dev_sammi.packagename.guessit.ui.activities.MainActivity
 import com.dev_sammi.packagename.guessit.ui.utils.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -71,10 +69,22 @@ class GameFragment : Fragment(R.layout.fragment_game) {
         }
 
 
+//        mGameViewModel.buzzPattern.observe(viewLifecycleOwner) { vibePattern ->
+////            vibrate(vibePattern.buzzPattern)
+//        }
 
-        mGameViewModel.buzzPattern.observe(viewLifecycleOwner) { vibePattern ->
-            vibrate(vibePattern.buzzPattern)
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mGameViewModel.buzzEvent.collectLatest {
+                    vibrate(it.buzzPattern)
+                }
+            }
         }
+
+
+
+
+
 
         binding.apply {
             mViewModel = mGameViewModel
@@ -82,16 +92,17 @@ class GameFragment : Fragment(R.layout.fragment_game) {
             mGameFragment = this@GameFragment
         }
 
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
             whenStarted {
                 mGameViewModel.eventChannel.collect() { event ->
                     when (event) {
                         GameViewModel.GameEvents.FinishStartingCountDown -> {
-                            withContext(Dispatchers.Main){
-                            binding.startingTimerLayout.isVisible = false
-                            binding.btCorrect.isEnabled = true
-                            binding.btSkipWord.isEnabled = true
-                            mGameViewModel.startMainGameTimer(false)}
+                            withContext(Dispatchers.Main) {
+                                binding.startingTimerLayout.isVisible = false
+                                binding.btCorrect.isEnabled = true
+                                binding.btSkipWord.isEnabled = true
+                                mGameViewModel.startMainGameTimer(false)
+                            }
                         }
                         GameViewModel.GameEvents.NavigateToScoreFragment -> {
                             findNavController().navigate(
@@ -138,9 +149,6 @@ class GameFragment : Fragment(R.layout.fragment_game) {
         mainActivity.supportActionBar?.hide()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
 
     override fun onDetach() {
         super.onDetach()
@@ -168,13 +176,15 @@ class GameFragment : Fragment(R.layout.fragment_game) {
     }
 
     private fun vibrate(buzzPattern: LongArray) {
-        val vibrator = activity?.getSystemService<Vibrator>()
-        vibrator?.let {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(VibrationEffect.createWaveform(buzzPattern, -1))
-            } else {
-                //deprecated in API 26
-                vibrator.vibrate(buzzPattern, -1)
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+            val vibrator = activity?.getSystemService<Vibrator>()
+            vibrator?.let {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createWaveform(buzzPattern, -1))
+                } else {
+                    //deprecated in API 26
+                    vibrator.vibrate(buzzPattern, -1)
+                }
             }
         }
     }

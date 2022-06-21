@@ -8,6 +8,7 @@ import com.dev_sammi.packagename.guessit.model.DataStoreValues
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -61,6 +62,9 @@ class GameViewModel @Inject constructor(
     private val _eventChannel = Channel<GameEvents>()
     val eventChannel get() = _eventChannel.receiveAsFlow()
 
+    private val _buzzEvent = Channel<Buzz>()
+    val buzzEvent get() = _buzzEvent.receiveAsFlow()
+
 
     /*This fun sorts and select a num of word to play the game depending on users setting*/
     fun sortAndSelectTenWords(list: List<String>?) {
@@ -95,11 +99,13 @@ class GameViewModel @Inject constructor(
         if (_count.value != takeNumOfWord.value) {
             _score.value = _score.value?.plus(1)
             _count.value = _count.value?.plus(1)
-            _buzzPattern.value = Buzz.CORRECT_BUZZ
+//            _buzzPattern.value = Buzz.CORRECT_BUZZ
+            sendBuzzPattern(Buzz.CORRECT_BUZZ)
 
             if (_count.value == takeNumOfWord.value) {
-                _buzzPattern.value = Buzz.GAME_OVER_BUZZ
-                viewModelScope.launch(Dispatchers.IO) {
+//                _buzzPattern.value = Buzz.GAME_OVER_BUZZ
+                sendBuzzPattern(Buzz.GAME_OVER_BUZZ)
+                viewModelScope.launch(Dispatchers.Default) {
                     _eventChannel.send(GameEvents.NavigateToScoreFragment)
                 }
             } else {
@@ -111,16 +117,24 @@ class GameViewModel @Inject constructor(
     fun skipAnswer() {
         if (_count.value != takeNumOfWord.value) {
             _count.value = _count.value?.plus(1)
-            _buzzPattern.value = Buzz.SKIP_BUZZ
+            sendBuzzPattern(Buzz.SKIP_BUZZ)
+//            _buzzPattern.value = Buzz.SKIP_BUZZ
 
             if (_count.value == takeNumOfWord.value) {
-                _buzzPattern.value = Buzz.GAME_OVER_BUZZ
-                viewModelScope.launch {
+//                _buzzPattern.value = Buzz.GAME_OVER_BUZZ
+                sendBuzzPattern(Buzz.GAME_OVER_BUZZ)
+                viewModelScope.launch(Dispatchers.Default) {
                     _eventChannel.send(GameEvents.NavigateToScoreFragment)
                 }
             } else {
                 nextWord()
             }
+        }
+    }
+
+    private fun sendBuzzPattern(buzz: Buzz){
+        viewModelScope.launch(Dispatchers.Default){
+            _buzzEvent.send(buzz)
         }
     }
 
@@ -147,11 +161,13 @@ class GameViewModel @Inject constructor(
     private val starterTimer = object : CountDownTimer(GET_READY, ONE_SECOND) {
         override fun onTick(millisUntilFinished: Long) {
             val timeTillFinish = millisUntilFinished / ONE_SECOND
-            _buzzPattern.value = Buzz.GET_READY_BUZZ
+            sendBuzzPattern(Buzz.GET_READY_BUZZ)
+//            _buzzPattern.value = Buzz.GET_READY_BUZZ
             _displayStarterTimer.postValue(timeTillFinish)
             if (timeTillFinish == ZERO_TIME) {
-                _buzzPattern.value = Buzz.START_BUZZ
-                viewModelScope.launch (Dispatchers.IO){
+//                _buzzPattern.value = Buzz.START_BUZZ
+                sendBuzzPattern(Buzz.START_BUZZ)
+                viewModelScope.launch (Dispatchers.Default){
                     _eventChannel.send(GameEvents.FinishStartingCountDown)
                 }
                 cancelGetReadyTimer()
@@ -169,7 +185,8 @@ class GameViewModel @Inject constructor(
                 val timeUntilFinish = millisUntilFinished / ONE_SECOND
                 Log.d(TAG, "onTick: $timeUntilFinish")
                 if (timeUntilFinish <= COUNTDOWN_PANIC_SECONDS) {
-                    _buzzPattern.value = Buzz.PANIC_BUZZ
+//                    _buzzPattern.value = Buzz.PANIC_BUZZ
+                    sendBuzzPattern(Buzz.PANIC_BUZZ)
                 }
                 var seconds = millisUntilFinished / 1000
                 val minutes = (seconds / 60) % 60
@@ -185,8 +202,9 @@ class GameViewModel @Inject constructor(
                 this@GameViewModel._displayMainTimer.postValue(formattedTime)
 
                 if (timeUntilFinish == ZERO_TIME) {
-                    _buzzPattern.value = Buzz.GAME_OVER_BUZZ
-                    viewModelScope.launch(Dispatchers.IO) {
+//                    _buzzPattern.value = Buzz.GAME_OVER_BUZZ
+                    sendBuzzPattern(Buzz.GAME_OVER_BUZZ)
+                    viewModelScope.launch(Dispatchers.Default) {
                         _eventChannel.send(GameEvents.NavigateToScoreFragment)
                     }
                 }
@@ -203,6 +221,7 @@ class GameViewModel @Inject constructor(
         super.onCleared()
         startMainGameTimer(true)
     }
+
 
 
     companion object {
