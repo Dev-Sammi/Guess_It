@@ -49,6 +49,13 @@ class PlayFragment() : Fragment() {
         hideSystemUI()
     }
 
+    override fun onDetach() {
+        super.onDetach()
+        showSystemUI()
+        mainActivity.supportActionBar?.show()
+//        requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.play_menu, menu)
@@ -83,6 +90,15 @@ class PlayFragment() : Fragment() {
         WindowCompat.setDecorFitsSystemWindows(mainActivity.window, true)
         WindowInsetsControllerCompat(mainActivity.window, binding.root).let { controller ->
             controller.hide(WindowInsetsCompat.Type.navigationBars())
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
+
+    private fun showSystemUI() {
+        WindowCompat.setDecorFitsSystemWindows(mainActivity.window, true)
+        WindowInsetsControllerCompat(mainActivity.window, binding.root).let { controller ->
+            controller.show(WindowInsetsCompat.Type.systemBars())
             controller.systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }

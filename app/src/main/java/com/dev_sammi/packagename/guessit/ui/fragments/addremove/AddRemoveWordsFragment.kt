@@ -8,6 +8,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -55,7 +56,8 @@ class AddRemoveWordsFragment : Fragment() {
         mainActivity.setSupportActionBar(binding.myToolBar)
         wordAdapter = WordAdapter()
 
-        viewModel.allWords.observe(viewLifecycleOwner) {
+        viewModel.displayedWords.observe(viewLifecycleOwner) {
+            viewModel.allWordsList = it
             wordAdapter.submitList(it)
         }
 
@@ -124,9 +126,24 @@ class AddRemoveWordsFragment : Fragment() {
                         )
                             .show()
                     }
-                    is AddEditViewModel.WordListEvent.ShowDeletedWordMessage -> TODO()
+                    is AddEditViewModel.WordListEvent.ShowDeletedWordMessage -> {
+                        Snackbar.make(
+                            requireView(),
+                            getString(R.string.word_deleted, event.deletedWord),
+                            Snackbar.LENGTH_LONG
+                        ).setAction("Undo") { _ ->
+                            viewModel.checkNewWord(event.deletedWord)
+                        }.show()
+                    }
                     is AddEditViewModel.WordListEvent.ShowEditedWordMessage -> TODO()
-                    is AddEditViewModel.WordListEvent.ShowErrorMessage -> TODO()
+                    is AddEditViewModel.WordListEvent.ShowErrorMessage -> {
+                        Snackbar.make(
+                            requireView(),
+                            event.error,
+                            Snackbar.LENGTH_LONG
+                        )
+                            .show()
+                    }
                 }.exhaustive
 
             }
@@ -151,13 +168,25 @@ class AddRemoveWordsFragment : Fragment() {
         }
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        return super.onOptionsItemSelected(item)
+        return  when (item.itemId) {
+            R.id.mi_add_words_in_bulk -> {
+                findNavController().navigate(
+                    AddRemoveWordsFragmentDirections.actionGlobalBulkFragment()
+                )
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
 
     override fun onDetach() {
 
         super.onDetach()
 
     }
-
 
 
 }

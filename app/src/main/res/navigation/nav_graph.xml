@@ -59,4 +59,8 @@
             android:id="@+id/action_settingsFragmentDialog_to_addRemoveWordsFragment"
             app:destination="@id/addRemoveWordsFragment" />
     </dialog><action android:id="@+id/action_global_settingsFragmentDialog" app:destination="@id/settingsFragmentDialog"/>
+    <dialog
+        android:id="@+id/bulkFragment"
+        android:name="com.dev_sammi.packagename.guessit.ui.fragments.dialogs.Bulk.BulkFragment"
+        android:label="BulkFragment" /><action android:id="@+id/action_global_bulkFragment" app:destination="@id/bulkFragment"/>
 </navigation>

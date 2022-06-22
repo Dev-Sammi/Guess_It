@@ -26,6 +26,8 @@
                 android:background="?attr/colorPrimary"
                 android:minHeight="?attr/actionBarSize"
                 android:theme="?attr/actionBarTheme"
+                app:subtitleTextAppearance="@style/TextAppearance.AppCompat.Display1"
+                app:titleTextAppearance="@style/TextAppearance.AppCompat.Large"
                 app:titleTextColor="#fff" />
         </com.google.android.material.appbar.AppBarLayout>
 

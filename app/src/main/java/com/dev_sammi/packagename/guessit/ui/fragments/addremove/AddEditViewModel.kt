@@ -1,5 +1,7 @@
 package com.dev_sammi.packagename.guessit.ui.fragments.addremove
 
+import android.provider.UserDictionary
+import android.util.Log
 import androidx.lifecycle.*
 import com.dev_sammi.packagename.guessit.WordRepository
 import com.dev_sammi.packagename.guessit.model.Word
@@ -10,6 +12,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
+private const val TAG = "AddEditViewModel"
 @HiltViewModel
 class AddEditViewModel @Inject constructor(
     private val state: SavedStateHandle,
@@ -23,7 +26,9 @@ class AddEditViewModel @Inject constructor(
     private val _searchQuery = state.getLiveData<String>("search_query", "")
     val searchQuery: LiveData<String> get() = _searchQuery
 
-    val allWords = _searchQuery.switchMap {
+    var allWordsList = listOf<Word>()
+
+    val displayedWords = _searchQuery.switchMap {
         wordDao.getAllWords(it)
     }
 
@@ -34,13 +39,44 @@ class AddEditViewModel @Inject constructor(
 
     fun checkNewWord(newWord: String) {
         if (!newWord.isNullOrEmpty()) {
-            val word = Word(text = newWord)
-            addNewWord(word)
+            val newText = newWord.lowercase()
+            val word = Word(text = newText)
+            if (!checkDatabase(newText)){
+                addNewWord(word)
+            }else{
+                viewModelScope.launch {
+                    _mEventChannel.send(WordListEvent.ShowErrorMessage("Word already exit!"))
+                }
+            }
         } else {
             viewModelScope.launch {
                 _mEventChannel.send(WordListEvent.ShowErrorMessage("Invalid input"))
             }
         }
+    }
+    init {
+        addWordsInBulk()
+    }
+
+    fun addWordsInBulk(){
+        val message = "Hey, come, here"
+        val newMessage = message.split(",").map {
+            it.trim().lowercase()
+        }
+        for(i in newMessage){
+            Log.d(TAG, "addWordsInBulk: $i")
+        }
+    }
+
+    private fun checkDatabase(text: String): Boolean{
+        var boolean = false
+        allWordsList.forEach {
+            if(text == it.text){
+                boolean = true
+            }
+
+        }
+        return boolean
     }
 
     private fun addNewWord(newWord: Word) {
@@ -52,8 +88,8 @@ class AddEditViewModel @Inject constructor(
 
     fun deleteWord(word: Word){
         viewModelScope.launch {
-            Timber.d("time to delete")
             wordDao.delete(word)
+            _mEventChannel.send(WordListEvent.ShowDeletedWordMessage(word.text))
         }
     }
 
